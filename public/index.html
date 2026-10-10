@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farfashangya Chat</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, Arial, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; direction: rtl; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        .top-nav-bar { background-color: #176580; color: white; padding: 6px 15px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px solid #114c61; }
+        .logo-text { font-weight: bold; font-size: 15px; color: #fff; }
+
+        .modal-backdrop-custom { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-card-box { background: #ffffff; padding: 25px; border-radius: 8px; width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .login-card-box h3 { font-size: 16px; margin-bottom: 10px; color: #176580; }
+        .login-card-box p { font-size: 11px; color: #64748b; margin-bottom: 12px; }
+        .login-card-box input, .login-card-box select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+        .btn-login-action { background: #176580; color: white; border: none; padding: 9px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-login-action:hover { background: #114c61; }
+        .link-toggle-reg { font-size: 11px; color: #2563eb; cursor: pointer; margin-top: 5px; display: inline-block; }
+
+        .chat-main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; height: 100%; position: relative; }
+        .chat-core-layout { flex: 1; display: flex; overflow: hidden; flex-direction: row; }
+        
+        .users-sidebar-pane { width: 230px; background-color: #176580; color: #ffffff; display: flex; flex-direction: column; font-size: 11px; border-left: 1px solid #114c61; }
+        .sidebar-header-title { background-color: #124e63; padding: 6px 10px; display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #0f3f51; }
+        .users-scroll-list { list-style: none; overflow-y: auto; flex: 1; padding: 5px 0; }
+        .users-scroll-list li { padding: 5px 10px; color: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .kick-btn-admin { background: #ef4444; color: white; border: none; padding: 2px 6px; font-size: 10px; border-radius: 3px; cursor: pointer; }
+        .kick-btn-admin:hover { background: #dc2626; }
+
+        .messages-container-pane { flex: 1; display: flex; flex-direction: column; background: #ffffff; position: relative; overflow: hidden; }
+        .messages-scroll-box { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; z-index: 2; }
+        .chat-msg-card { background: #f1f5f9; border-right: 3px solid #176580; padding: 7px 12px; border-radius: 4px; margin: 6px 0; }
+
+        .bottom-tools-bar { background-color: #e2e8f0; padding: 6px 10px; display: flex; align-items: center; gap: 6px; border-top: 1px solid #cbd5e1; position: relative; z-index: 50; }
+        .tools-left-group { display: flex; gap: 4px; }
+        .tool-ico-btn { background: #ffffff; border: 1px solid #cbd5e1; color: #334155; padding: 5px 9px; font-size: 13px; cursor: pointer; border-radius: 4px; }
+        .tool-ico-btn:hover { background: #f1f5f9; }
+
+        .message-input-container { flex: 1; }
+        .message-input-container input { width: 100%; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background: #fff; }
+        .btn-send-classic { background-color: #176580; color: white; border: none; padding: 7px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+
+        .emoji-picker-box { position: absolute; bottom: 48px; right: 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; width: 270px; height: 180px; box-shadow: 0 -4px 15px rgba(0,0,0,0.15); display: flex; flex-direction: column; z-index: 999; }
+        .emoji-header { background: #176580; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-radius: 5px 5px 0 0; }
+        .emoji-close-btn { cursor: pointer; font-size: 12px; }
+        .emoji-grid-scroll { flex: 1; padding: 8px; overflow-y: auto; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; font-size: 20px; text-align: center; }
+        .emoji-item { cursor: pointer; border-radius: 3px; padding: 2px; }
+        .emoji-item:hover { background: #f1f5f9; transform: scale(1.15); }
+
+        .settings-modal-box { position: absolute; bottom: 48px; right: 55px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; width: 280px; padding: 15px; box-shadow: 0 -4px 15px rgba(0,0,0,0.15); z-index: 999; text-align: right; }
+        .settings-modal-box h4 { font-size: 13px; color: #176580; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .settings-modal-box label { font-size: 11px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px; }
+        .settings-modal-box input, .settings-modal-box select { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 3px; margin-bottom: 10px; font-size: 12px; }
+        .btn-settings-save { background: #176580; color: white; border: none; padding: 6px 12px; font-size: 11px; border-radius: 3px; cursor: pointer; width: 100%; font-weight: bold; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header class="top-nav-bar">
+        <span class="logo-text">Farfashangya Chat</span>
+    </header>
+
+    <div id="login-modal-wrapper" class="modal-backdrop-custom">
+        <div class="login-card-box">
+            <div id="login-form-view">
+                <h3>تسجيل الدخول إلى الشات</h3>
+                <p>اكتب اسمك والرقم السري (إن وجد):</p>
+                <input type="text" id="username" placeholder="الاسم المستعار..." maxlength="25" autofocus>
+                <input type="password" id="password" placeholder="الرقم السري...">
+                <select id="room-select">
+                    <option value="مصر">غرفة مصر</option>
+                    <option value="شباب و بنات">غرفة شباب و بنات</option>
+                    <option value="فرفشة">غرفة فرفشة</option>
+                    <option value="كل العرب">غرفة كل العرب</option>
+                    <option value="مساعدة و شكاوي">غرفة مساعدة و شكاوي</option>
+                </select>
+                <button onclick="initChat()" class="btn-login-action">دخول</button>
+                <span class="link-toggle-reg" onclick="toggleRegView(true)">سجل اسمك الجديد واربطه بالجيميل ➔</span>
+            </div>
+
+            <div id="register-form-view" class="hidden">
+                <h3>تسجيل اسم جديد بالجيميل</h3>
+                <p>احجز اسمك الدائم وقم بتأكيد هويتك عبر كود التحقق:</p>
+                <input type="text" id="reg-username" placeholder="الاسم المستعار المراد حجزه...">
+                <input type="email" id="reg-email" placeholder="بريدك الإلكتروني (Gmail)...">
+                <input type="password" id="reg-password" placeholder="كلمة المرور الجديدة...">
+                <button onclick="requestEmailCode()" class="btn-login-action" style="margin-bottom: 8px;">إرسال كود التحقق للجيميل</button>
+                
+                <div id="code-verify-section" class="hidden">
+                    <input type="text" id="reg-code" placeholder="أدخل كود التحقق المكون من 6 أرقام...">
+                    <button onclick="verifyAndRegister()" class="btn-login-action" style="background: #16a34a;">تأكيد وحفظ الاسم</button>
+                </div>
+                <span class="link-toggle-reg" onclick="toggleRegView(false)">← العودة لتسجيل الدخول</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-chat-interface" class="chat-main-wrapper hidden">
+        <div class="chat-core-layout">
+            <div class="users-sidebar-pane">
+                <div class="sidebar-header-title">
+                    <span id="sidebar-room-title">مصر#</span>
+                    <span id="user-count">0</span>
+                </div>
+                <ul class="users-scroll-list" id="users-list"></ul>
+            </div>
+            <div class="messages-container-pane">
+                <div class="messages-scroll-box" id="messages"></div>
+            </div>
+        </div>
+
+        <div class="bottom-tools-bar">
+            <div class="tools-left-group">
+                <button class="tool-ico-btn" onclick="toggleEmojiPicker(event)" title="إيموجي">😊</button>
+                <button class="tool-ico-btn" onclick="toggleSettingsMenu(event)" title="الإعدادات">⚙️</button>
+                <!-- زر لوحة التحكم الخاص بالأدمن وحده -->
+                <button id="admin-panel-btn" class="tool-ico-btn hidden" onclick="toggleAdminPanel(event)" title="لوحة التحكم" style="background: #b91c1c; color: white;">🛡️ التحكم</button>
+            </div>
+            <div class="message-input-container">
+                <input type="text" id="msg-input" placeholder="إكتب رسالتك هنا.." onkeypress="checkChatEnter(event)">
+            </div>
+            <button onclick="sendPublicMessage()" class="btn-send-classic">إرسال</button>
+
+            <div id="emoji-picker" class="emoji-picker-box hidden">
+                <div class="emoji-header">
+                    <span>اختر إيموجي</span>
+                    <span class="emoji-close-btn" onclick="toggleEmojiPicker(event)">✕</span>
+                </div>
+                <div class="emoji-grid-scroll" id="emoji-list-container"></div>
+            </div>
+
+            <div id="settings-menu" class="settings-modal-box hidden">
+                <h4>إعدادات الخط واللون</h4>
+                <label>اختر لون خط رسائلك:</label>
+                <input type="color" id="text-color-picker" value="#1e293b">
+                <button onclick="saveTextColorSetting()" class="btn-settings-save">حفظ لون الخط</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let myUsername = "";
+        let currentRoom = "مصر";
+        let isUserMaster = false;
+        let activeRoomUsers = [];
+
+        const emojisList = ['😀', '😃', '😄', '😁', '😅', '😂', '😊', '😇', '😍', '😘', '😜', '😎', '🤩', '🥳', '😏', '😌', '🤔', '😎', '😭', '😡', '👍', '👎', '👏', '🙏', '❤️', '🔥', '⭐', '✨', '🎉', '☕', '🌹', '🖤', '🥀'];
+
+        function renderEmojiPicker() {
+            const container = document.getElementById('emoji-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            emojisList.forEach(emoji => {
+                const span = document.createElement('span');
+                span.className = 'emoji-item';
+                span.innerText = emoji;
+                span.onclick = () => {
+                    const input = document.getElementById('msg-input');
+                    input.value += emoji;
+                    input.focus();
+                    toggleEmojiPicker();
+                };
+                container.appendChild(span);
+            });
+        }
+
+        function toggleEmojiPicker(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('settings-menu').classList.add('hidden');
+            document.getElementById('emoji-picker').classList.toggle('hidden');
+        }
+
+        function toggleSettingsMenu(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('emoji-picker').classList.add('hidden');
+            document.getElementById('settings-menu').classList.toggle('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const emojiPicker = document.getElementById('emoji-picker');
+            const settingsMenu = document.getElementById('settings-menu');
+            if (!emojiPicker.contains(e.target) && !e.target.matches('[title="إيموجي"]')) emojiPicker.classList.add('hidden');
+            if (!settingsMenu.contains(e.target) && !e.target.matches('[title="الإعدادات"]')) settingsMenu.classList.add('hidden');
+        });
+
+        function toggleRegView(showReg) {
+            document.getElementById('login-form-view').classList.toggle('hidden', showReg);
+            document.getElementById('register-form-view').classList.toggle('hidden', !showReg);
+        }
+
+        async function requestEmailCode() {
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            if (!username || !email) {
+                alert('الرجاء إدخال الاسم والبريد الإلكتروني!');
+                return;
+            }
+
+            const res = await fetch('/api/send-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (data.success) {
+                document.getElementById('code-verify-section').classList.remove('hidden');
+            }
+        }
+
+        async function verifyAndRegister() {
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const code = document.getElementById('reg-code').value.trim();
+
+            const res = await fetch('/api/verify-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, code, password })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (data.success) {
+                toggleRegView(false);
+                document.getElementById('username').value = username;
+                document.getElementById('password').value = password;
+            }
+        }
+
+        function initChat() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const selectRoom = document.getElementById('room-select');
+            
+            if (!usernameInput) return;
+            const name = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!name) {
+                alert("برجاء إدخال الاسم!");
+                return;
+            }
+
+            myUsername = name;
+            currentRoom = selectRoom.value;
+
+            socket.emit('joinRoom', { username: name, password: password, room: currentRoom });
+        }
+
+        function saveTextColorSetting() {
+            const color = document.getElementById('text-color-picker').value;
+            socket.emit('changeTextColor', color);
+            alert('تم حفظ لون الخط بنجاح!');
+            document.getElementById('settings-menu').classList.add('hidden');
+        }
+
+        socket.on('loginSuccess', (data) => {
+            document.getElementById('login-modal-wrapper').classList.add('hidden');
+            document.getElementById('main-chat-interface').classList.remove('hidden');
+            document.getElementById('sidebar-room-title').innerText = `${currentRoom}#`;
+            
+            isUserMaster = data.isMaster;
+            if (isUserMaster) {
+                document.getElementById('admin-panel-btn').classList.remove('hidden');
+            }
+
+            renderEmojiPicker();
+        });
+
+        socket.on('loginError', (errText) => {
+            alert(errText);
+        });
+
+        socket.on('message', (data) => {
+            const msgArea = document.getElementById('messages');
+            if (!msgArea) return;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-msg-card';
+            
+            if (data.system) {
+                msgDiv.style.color = '#64748b';
+                msgDiv.style.fontStyle = 'italic';
+                msgDiv.innerHTML = `<b>${data.user} :</b> ${data.text}`;
+            } else {
+                let rankIcon = data.isMaster ? '🛡️ ' : '★ ';
+                msgDiv.style.color = data.textColor || '#1e293b';
+                msgDiv.innerHTML = `<b>${rankIcon}${data.user} :</b> ${data.text}`;
+            }
+
+            msgArea.appendChild(msgDiv);
+            msgArea.scrollTop = msgArea.scrollHeight;
+        });
+
+        socket.on('roomUsers', (users) => {
+            activeRoomUsers = users;
+            const list = document.getElementById('users-list');
+            const count = document.getElementById('user-count');
+            if (!list || !count) return;
+            list.innerHTML = '';
+            count.innerText = users.length;
+            
+            users.forEach(u => {
+                const li = document.createElement('li');
+                let rankTxt = u.isMaster ? '🛡️ ' : '★ ';
+                
+                let userSpan = document.createElement('span');
+                userSpan.innerText = rankTxt + u.username;
+                li.appendChild(userSpan);
+
+                // إذا كنت أنت الأدمن وصلاحياتك مفعلة، أظهر زر "طرد" بجانب أي عضو آخر في القائمة
+                if (isUserMaster && u.id !== socket.id) {
+                    const kickBtn = document.createElement('button');
+                    kickBtn.className = 'kick-btn-admin';
+                    kickBtn.innerText = 'طرد';
+                    kickBtn.onclick = () => {
+                        if (confirm(`هل تريد حقاً طرد العضو [${u.username}]؟`)) {
+                            socket.emit('adminKickUser', u.id);
+                        }
+                    };
+                    li.appendChild(kickBtn);
+                }
+
+                list.appendChild(li);
+            });
+        });
+
+        function sendPublicMessage() {
+            const input = document.getElementById('msg-input');
+            if (!input) return;
+            const text = input.value.trim();
+            if (text) {
+                socket.emit('chatMessage', text);
+                input.value = '';
+            }
+        }
+
+        function checkChatEnter(e) {
+            if (e.key === 'Enter') sendPublicMessage();
+        }
+
+        socket.on('kicked', (reason) => {
+            alert(reason);
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

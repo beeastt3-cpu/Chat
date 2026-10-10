@@ -1,0 +1,332 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #eef2f7;
+    color: #333;
+    direction: rtl;
+}
+
+.container {
+    width: 92%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* الهيدر العلوي */
+.main-header {
+    background-color: #1b365d;
+    padding: 10px 0;
+    border-bottom: 3px solid #f39c12;
+}
+
+.header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo h1 {
+    color: #f39c12;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.nav-menu ul {
+    display: flex;
+    list-style: none;
+    gap: 15px;
+}
+
+.nav-menu a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.nav-menu a.active, .nav-menu a:hover {
+    color: #f39c12;
+}
+
+/* شريط الأخبار العاجلة */
+.ticker-bar {
+    background-color: #2c3e50;
+    color: #fff;
+    padding: 5px 0;
+    font-size: 13px;
+}
+
+.ticker-flex {
+    display: flex;
+    align-items: center;
+}
+
+.ticker-tag {
+    background: #e74c3c;
+    color: #fff;
+    padding: 2px 6px;
+    font-weight: bold;
+    margin-left: 10px;
+    font-size: 11px;
+    border-radius: 3px;
+}
+
+/* التخطيط العام */
+.main-grid {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.chat-section {
+    flex: 3;
+}
+
+.sidebar {
+    flex: 1;
+}
+
+/* صندوق الشات الرئيسي */
+.chat-card {
+    background: #fff;
+    border: 1px solid #bce8f1;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.chat-card-header {
+    background: #31708f;
+    color: white;
+    padding: 10px 15px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* شاشة تسجيل الدخول */
+.login-box {
+    padding: 30px;
+    text-align: center;
+    background: #fff;
+}
+
+.intro-desc {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: right;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #5cb85c;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 4px;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background: #4cae4c;
+}
+
+/* لوحة تحكم الأدمن (SHURBAGY) */
+.admin-panel {
+    background: #222;
+    color: #fff;
+    padding: 10px 15px;
+    border-bottom: 2px solid #f39c12;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-panel h3 {
+    font-size: 13px;
+    color: #f39c12;
+}
+
+.admin-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-danger { background: #d9534f; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+.btn-warning { background: #f0ad4e; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+.btn-secondary { background: #777; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+
+/* منطقة الشات الداخلية */
+.chat-layout {
+    display: flex;
+    height: 420px;
+    background: #fff;
+}
+
+.messages-area {
+    flex: 3.5;
+    padding: 15px;
+    overflow-y: auto;
+    background: #fdfdfd;
+    border-left: 1px solid #ddd;
+}
+
+.users-sidebar {
+    flex: 1.5;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+
+.users-header {
+    background: #e9ecef;
+    padding: 8px;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.users-list {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.users-list li {
+    padding: 7px 10px;
+    font-size: 12px;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* صندوق كتابة الرسائل */
+.input-bar {
+    display: flex;
+    padding: 10px;
+    background: #f1f1f1;
+    border-top: 1px solid #ddd;
+    gap: 8px;
+}
+
+.input-bar input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn-send {
+    background: #337ab7;
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-send:hover {
+    background: #286090;
+}
+
+/* تصميم الرسائل */
+.msg-row {
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.msg-system {
+    color: #888;
+    font-style: italic;
+    font-size: 11px;
+    text-align: center;
+    margin: 5px 0;
+}
+
+.msg-user {
+    font-weight: bold;
+    color: #337ab7;
+    margin-left: 5px;
+}
+
+/* القائمة الجانبية للغرف */
+.sidebar-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.sidebar-title {
+    background: #333;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.rooms-menu {
+    list-style: none;
+}
+
+.rooms-menu li a {
+    display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #f1f1f1;
+    font-size: 13px;
+}
+
+.rooms-menu li a:hover, .rooms-menu li a.active {
+    background: #e8f4f8;
+    color: #337ab7;
+    font-weight: bold;
+}
+
+/* الفوتر */
+.main-footer {
+    text-align: center;
+    padding: 15px;
+    background: #2c3e50;
+    color: white;
+    margin-top: 25px;
+    font-size: 12px;
+}
+
+.hidden { display: none !important; }
