@@ -1,0 +1,14 @@
+{
+  "name": "kalamngy-chat-clone",
+  "version": "1.0.0",
+  "description": "نسخة متكاملة وبدون أخطاء من شات كلامنجي مصر",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemailer": "^10.1.0",
+    "socket.io": "^4.7.5"
+  }
+}
